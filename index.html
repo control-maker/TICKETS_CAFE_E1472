@@ -32,22 +32,36 @@
     let folioCounter = 0;
 
     window.register = async function () {
-      const email = document.getElementById('registerEmail').value;
-      const password = document.getElementById('registerPassword').value;
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert("Registrado exitosamente");
+      try {
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Registrado exitosamente");
+      } catch (error) {
+        alert("Error en el registro: " + error.message);
+      }
     }
 
     window.login = async function () {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      await signInWithEmailAndPassword(auth, email, password);
+      try {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        alert("Error al iniciar sesión: " + error.message);
+      }
     }
 
     window.resetPassword = async function () {
       const email = prompt("Introduce tu correo para recuperar la contraseña:");
-      if (email) await sendPasswordResetEmail(auth, email);
-      alert("Correo enviado para recuperar contraseña (simulado)");
+      if (email) {
+        try {
+          await sendPasswordResetEmail(auth, email);
+          alert("Correo enviado para recuperar contraseña");
+        } catch (error) {
+          alert("Error al enviar correo: " + error.message);
+        }
+      }
     }
 
     onAuthStateChanged(auth, user => {
@@ -55,6 +69,9 @@
         document.getElementById("authSection").style.display = 'none';
         document.getElementById("mainSection").style.display = 'block';
         cargarTickets();
+      } else {
+        document.getElementById("authSection").style.display = 'block';
+        document.getElementById("mainSection").style.display = 'none';
       }
     });
 
@@ -85,9 +102,9 @@
       querySnapshot.forEach(docu => {
         const ticket = docu.data();
         const card = document.createElement("div");
-        card.className = "col-md-4 card p-3";
+        card.className = "col-md-4 card p-3 border-0 shadow-sm mb-3";
         card.innerHTML = `
-          <h5>${ticket.folio} - ${ticket.titulo}</h5>
+          <h5><i class="fas fa-mug-hot"></i> ${ticket.folio} - ${ticket.titulo}</h5>
           <p>${ticket.descripcion}</p>
           <p><strong>Prioridad:</strong> ${ticket.prioridad}</p>
           <p><strong>Estado:</strong> ${ticket.estado}</p>
@@ -142,19 +159,20 @@
   </script>
   <style>
     body {
-      background-color: #fdf6ec;
+      background-color: #fcf8f3;
       color: #4b2e2e;
     }
     .navbar {
-      background-color: #6f4e37;
+      background-color: #5e4033;
     }
     .navbar-brand, .nav-link, h1, h2, h3 {
       color: #fff !important;
     }
+    .container {
+      max-width: 900px;
+    }
     .card {
-      border: none;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      margin-bottom: 1rem;
+      background: #fff8f0;
     }
     .form-control, .form-select {
       margin-bottom: 1rem;
@@ -163,17 +181,20 @@
       background-color: #a9746e;
       color: white;
     }
+    .btn {
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 
 <body>
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Exportación de Café S.A. de C.V.</a>
+      <a class="navbar-brand" href="#"><i class="fas fa-mug-hot"></i> Exportación de Café</a>
     </div>
   </nav>
 
-  <div class="container my-4" id="app">
+  <div class="container my-4 text-center" id="app">
     <!-- Login / Registro -->
     <div id="authSection">
       <h2>Iniciar Sesión</h2>
@@ -185,12 +206,13 @@
       <input type="email" class="form-control" id="registerEmail" placeholder="Correo">
       <input type="password" class="form-control" id="registerPassword" placeholder="Contraseña">
       <button class="btn btn-success" onclick="register()">Registrarse <i class="fas fa-user-plus"></i></button>
+      <br>
       <button class="btn btn-link" onclick="resetPassword()">¿Olvidaste tu contraseña?</button>
     </div>
 
     <!-- Panel principal -->
     <div id="mainSection" style="display: none;">
-      <h2>Crear Ticket</h2>
+      <h2><i class="fas fa-ticket-alt"></i> Crear Ticket</h2>
       <input type="text" class="form-control" id="titulo" placeholder="Título del Pedido">
       <textarea class="form-control" id="descripcion" placeholder="Descripción del Pedido"></textarea>
       <select class="form-select" id="prioridad">
@@ -209,15 +231,16 @@
       <button class="btn btn-primary" onclick="crearTicket()">Crear Ticket <i class="fas fa-plus"></i></button>
 
       <hr>
-      <h3>Tickets Activos</h3>
-      <div id="ticketsList" class="row"></div>
+      <h3><i class="fas fa-clipboard-list"></i> Tickets Activos</h3>
+      <div id="ticketsList" class="row justify-content-center"></div>
 
       <hr>
-      <h3>Estadísticas</h3>
+      <h3><i class="fas fa-chart-bar"></i> Estadísticas</h3>
       <canvas id="chartPrioridad"></canvas>
 
       <button class="btn btn-secondary mt-3" onclick="exportarCSV()">Exportar Tickets a CSV <i class="fas fa-file-csv"></i></button>
     </div>
   </div>
 </body>
+
 </html>
